@@ -45,8 +45,15 @@ jobs:
       - name: Update HTML
         run: |
           echo "Updating HTML file references..."
-          sed -i 's/script.js/script.min.js/g' index.html
-          sed -i 's/styles.css/styles.min.css/g' index.html
+          awk '{
+            gsub(/script\.js/, "script.min.js");
+            gsub(/styles\.css/, "styles.min.css");
+            print
+          }' index.html > index.html.tmp
+
+          mv index.html.tmp index.html
+
+          echo "Updated HTML content:"
           cat index.html
 
       - name: List files before deploy
