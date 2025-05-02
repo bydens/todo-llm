@@ -3,7 +3,7 @@ name: Deploy JS project
 on:
   push:
     branches:
-      - dev-js
+      - build
 
 jobs:
   build-and-deploy:
