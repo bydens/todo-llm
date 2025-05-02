@@ -22,18 +22,37 @@ jobs:
           node-version: "20"
 
       - name: Install dependencies
-        run: npm install -g terser clean-css-cli
+        run: |
+          npm install -g terser clean-css-cli
+          npm install
 
       - name: Minify JavaScript
-        run: terser script.js -o script.min.js --compress --mangle
+        run: |
+          echo "Original JS file size:"
+          ls -lh script.js
+          terser script.js -o script.min.js --compress --mangle
+          echo "Minified JS file size:"
+          ls -lh script.min.js
 
       - name: Minify CSS
-        run: cleancss -o styles.min.css styles.css
+        run: |
+          echo "Original CSS file size:"
+          ls -lh styles.css
+          cleancss -o styles.min.css styles.css
+          echo "Minified CSS file size:"
+          ls -lh styles.min.css
 
       - name: Update HTML
         run: |
+          echo "Updating HTML file references..."
           sed -i 's/script.js/script.min.js/g' index.html
           sed -i 's/styles.css/styles.min.css/g' index.html
+          cat index.html
+
+      - name: List files before deploy
+        run: |
+          echo "Files in directory:"
+          ls -la
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
