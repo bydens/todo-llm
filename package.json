@@ -1,22 +1,13 @@
 {
-  "name": "todo",
+  "name": "todo-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "Todo application",
   "main": "script.js",
   "scripts": {
-    "clean": "rimraf dist",
-    "copy-assets": "copyfiles \"index.html\" \"img/**/*\" dist",
-    "minify-css": "cleancss -o dist/styles.css styles.css",
-    "minify-js": "terser script.js -o dist/script.js",
-    "build": "npm run clean && npm run copy-assets && npm run minify-css && npm run minify-js"
+    "build": "terser script.js -o script.min.js --compress --mangle && cleancss -o styles.min.css styles.css"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
-    "clean-css-cli": "^5.6.3",
-    "copyfiles": "^2.4.1",
-    "rimraf": "^6.0.1",
-    "terser": "^5.39.0"
+    "clean-css-cli": "^5.6.2",
+    "terser": "^5.28.1"
   }
 }
