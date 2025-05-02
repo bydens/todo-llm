@@ -3,6 +3,7 @@ const STORAGE_KEY = 'todos';
 const FILTER_ALL = 'all';
 const FILTER_ACTIVE = 'active';
 const FILTER_COMPLETED = 'completed';
+const ITEMS_PER_PAGE = 10;
 
 // DOM elements
 const todoInput = document.getElementById('newTodo');
@@ -13,11 +14,15 @@ const filterButtons = document.querySelectorAll('.filter-btn');
 const deleteModal = document.getElementById('deleteModal');
 const confirmDeleteBtn = document.getElementById('confirmDelete');
 const cancelDeleteBtn = document.getElementById('cancelDelete');
+const prevPageBtn = document.getElementById('prevPage');
+const nextPageBtn = document.getElementById('nextPage');
+const pageInfo = document.getElementById('pageInfo');
 
 // Application state
 let todos = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 let currentFilter = FILTER_ALL;
 let todoToDelete = null;
+let currentPage = 1;
 
 // Functions
 const saveTodos = () => {
@@ -67,16 +72,39 @@ const createTodoElement = (todo) => {
   return li;
 };
 
-const renderTodos = () => {
-  todoList.innerHTML = '';
-  const filteredTodos = todos.filter(todo => {
+const getFilteredTodos = () => {
+  return todos.filter(todo => {
     if (currentFilter === FILTER_ALL) return true;
     if (currentFilter === FILTER_ACTIVE) return !todo.completed;
     if (currentFilter === FILTER_COMPLETED) return todo.completed;
     return true;
   });
+};
 
-  filteredTodos.forEach(todo => {
+const updatePagination = (filteredTodos) => {
+  const totalPages = Math.ceil(filteredTodos.length / ITEMS_PER_PAGE);
+  currentPage = Math.min(currentPage, Math.max(1, totalPages));
+
+  // Show/hide pagination buttons based on current page and total pages
+  prevPageBtn.classList.toggle('hidden', currentPage === 1);
+  nextPageBtn.classList.toggle('hidden', currentPage === totalPages || totalPages === 0);
+
+  // Update page info
+  pageInfo.textContent = totalPages > 0
+    ? `Page ${currentPage} of ${totalPages}`
+    : 'No items to display';
+};
+
+const renderTodos = () => {
+  todoList.innerHTML = '';
+  const filteredTodos = getFilteredTodos();
+  updatePagination(filteredTodos);
+
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const paginatedTodos = filteredTodos.slice(startIndex, endIndex);
+
+  paginatedTodos.forEach(todo => {
     todoList.appendChild(createTodoElement(todo));
   });
 
@@ -121,9 +149,15 @@ const handleDeleteTodo = () => {
 
 const handleFilterChange = (filter) => {
   currentFilter = filter;
+  currentPage = 1;
   filterButtons.forEach(btn => {
     btn.classList.toggle('active', btn.dataset.filter === filter);
   });
+  renderTodos();
+};
+
+const handlePageChange = (direction) => {
+  currentPage += direction;
   renderTodos();
 };
 
@@ -141,6 +175,9 @@ filterButtons.forEach(btn => {
 
 confirmDeleteBtn.addEventListener('click', handleDeleteTodo);
 cancelDeleteBtn.addEventListener('click', hideDeleteModal);
+
+prevPageBtn.addEventListener('click', () => handlePageChange(-1));
+nextPageBtn.addEventListener('click', () => handlePageChange(1));
 
 // Close modal when clicking outside
 deleteModal.addEventListener('click', (e) => {
