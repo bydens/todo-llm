@@ -2,3 +2,5 @@
 *.min.css
 node_modules/
 dist/
+!script.min.js
+!styles.min.css
