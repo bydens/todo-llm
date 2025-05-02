@@ -33,6 +33,10 @@ jobs:
           terser script.js -o script.min.js --compress --mangle
           echo "Minified JS file size:"
           ls -lh script.min.js
+          if [ ! -f script.min.js ]; then
+            echo "Error: script.min.js was not created"
+            exit 1
+          fi
 
       - name: Minify CSS
         run: |
@@ -41,6 +45,10 @@ jobs:
           cleancss -o styles.min.css styles.css
           echo "Minified CSS file size:"
           ls -lh styles.min.css
+          if [ ! -f styles.min.css ]; then
+            echo "Error: styles.min.css was not created"
+            exit 1
+          fi
 
       - name: Update HTML
         run: |
@@ -56,10 +64,14 @@ jobs:
           echo "Updated HTML content:"
           cat index.html
 
-      - name: List files before deploy
+      - name: Verify files
         run: |
-          echo "Files in directory:"
+          echo "Checking files before deploy:"
           ls -la
+          if [ ! -f script.min.js ] || [ ! -f styles.min.css ]; then
+            echo "Error: Minified files are missing"
+            exit 1
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -68,3 +80,4 @@ jobs:
           publish_dir: ./
           publish_branch: gh-pages
           force_orphan: true
+          commit_message: "Deploy: Update with minified files"
