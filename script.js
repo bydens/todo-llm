@@ -47,27 +47,40 @@ const hideDeleteModal = () => {
 
 const createTodoElement = (todo) => {
   const li = document.createElement('li');
-  li.className = 'todo-item';
-  li.dataset.id = todo.id;
+  li.className = 'todo-item-row';
 
-  const checkbox = document.createElement('input');
-  checkbox.type = 'checkbox';
-  checkbox.className = 'todo-checkbox';
-  checkbox.checked = todo.completed;
-  checkbox.addEventListener('change', () => handleToggleTodo(todo.id));
+  // Task text
+  const textDiv = document.createElement('div');
+  textDiv.className = 'todo-text';
+  textDiv.textContent = todo.text;
+  textDiv.title = 'Click to toggle status';
+  textDiv.addEventListener('click', () => handleToggleTodo(todo.id));
 
-  const span = document.createElement('span');
-  span.className = `todo-text ${todo.completed ? 'completed' : ''}`;
-  span.textContent = todo.text;
+  // Status badge
+  const statusSpan = document.createElement('span');
+  statusSpan.className = 'status-badge ' + (todo.completed ? 'completed' : 'pending');
+  statusSpan.textContent = todo.completed ? 'Completed' : 'Pending';
 
-  const deleteButton = document.createElement('button');
-  deleteButton.className = 'delete-btn';
-  deleteButton.textContent = 'Delete';
-  deleteButton.addEventListener('click', () => showDeleteModal(todo.id));
+  // Delete icon
+  const deleteBtn = document.createElement('button');
+  deleteBtn.className = 'delete-icon-btn';
+  deleteBtn.title = 'Delete';
+  deleteBtn.setAttribute('aria-label', 'Delete');
+  deleteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showDeleteModal(todo.id);
+  });
+  deleteBtn.innerHTML = `
+    <svg class="delete-icon" viewBox="0 0 24 24">
+      <path d="M3 6h18M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+  `;
 
-  li.appendChild(checkbox);
-  li.appendChild(span);
-  li.appendChild(deleteButton);
+  li.appendChild(textDiv);
+  li.appendChild(statusSpan);
+  li.appendChild(deleteBtn);
 
   return li;
 };
@@ -96,6 +109,7 @@ const updatePagination = (filteredTodos) => {
 };
 
 const renderTodos = () => {
+  const todoList = document.getElementById('todoList');
   todoList.innerHTML = '';
   const filteredTodos = getFilteredTodos();
   updatePagination(filteredTodos);

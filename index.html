@@ -7,30 +7,40 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Todo List</h1>
-      <div class="todo-input">
-        <input
-          type="text"
-          id="newTodo"
-          placeholder="What needs to be done?"
-          aria-label="New task"
-        />
-        <button id="addTodo">Add</button>
-      </div>
-      <div class="filters">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="active">Active</button>
-        <button class="filter-btn" data-filter="completed">Completed</button>
-      </div>
-      <ul id="todoList" class="todo-list"></ul>
-      <div class="pagination">
-        <button id="prevPage" class="pagination-btn">Previous</button>
-        <span id="pageInfo" class="page-info">Page 1</span>
-        <button id="nextPage" class="pagination-btn">Next</button>
-      </div>
-      <div class="todo-stats">
-        <span id="itemsLeft">0 items left</span>
+    <div class="main-bg">
+      <div class="todo-container">
+        <header class="todo-header">
+          <h1>TODO List</h1>
+        </header>
+        <div class="todo-form-block">
+          <form class="todo-form" onsubmit="return false;">
+            <input
+              type="text"
+              id="newTodo"
+              placeholder="What would you like to do?"
+              aria-label="New task"
+              autocomplete="off"
+            />
+            <button id="addTodo" type="button">Add</button>
+          </form>
+        </div>
+        <div class="todo-list-block">
+          <h2>Todo List</h2>
+          <div class="todo-list-header">
+            <span class="todo-col todo-col-text">List</span>
+            <span class="todo-col todo-col-status">Status</span>
+            <span class="todo-col todo-col-close">Close</span>
+          </div>
+          <ul id="todoList" class="todo-list"></ul>
+        </div>
+        <div class="pagination">
+          <button id="prevPage" class="pagination-btn">Previous</button>
+          <span id="pageInfo" class="page-info">Page 1</span>
+          <button id="nextPage" class="pagination-btn">Next</button>
+        </div>
+        <div class="todo-stats">
+          <span id="itemsLeft">0 items left</span>
+        </div>
       </div>
     </div>
 
