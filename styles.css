@@ -1,11 +1,16 @@
 :root {
-  --primary-color: #4a90e2;
-  --secondary-color: #f5f5f5;
-  --text-color: #333;
-  --border-color: #ddd;
-  --hover-color: #357abd;
-  --modal-overlay: rgba(0, 0, 0, 0.5);
-  --disabled-color: #ccc;
+  --primary-color: #3b82f6;
+  --secondary-color: #f3f4f6;
+  --text-color: #1f2937;
+  --border-color: #e5e7eb;
+  --hover-color: #2563eb;
+  --modal-overlay: rgba(0, 0, 0, 0.3);
+  --disabled-color: #9ca3af;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+    0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -25,10 +30,11 @@ body {
 .container {
   max-width: 600px;
   margin: 2rem auto;
-  padding: 1rem;
+  padding: 2rem;
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  transition: var(--transition);
 }
 
 h1 {
@@ -45,24 +51,40 @@ h1 {
 
 input[type="text"] {
   flex: 1;
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 button {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
   background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+  font-weight: 500;
 }
 
 button:hover {
   background-color: var(--hover-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+button:active {
+  transform: translateY(0);
 }
 
 .filters {
@@ -90,12 +112,20 @@ button:hover {
 .todo-item {
   display: flex;
   align-items: center;
-  padding: 0.5rem;
+  padding: 1rem;
   border-bottom: 1px solid var(--border-color);
+  transition: var(--transition);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .todo-item:last-child {
   border-bottom: none;
+}
+
+.todo-item:hover {
+  background-color: var(--secondary-color);
+  transform: translateX(4px);
 }
 
 .todo-checkbox {
@@ -139,19 +169,44 @@ button:hover {
   z-index: 1000;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(4px);
 }
 
 .modal[aria-hidden="false"] {
   display: flex;
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .modal-content {
   background: white;
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 12px;
   max-width: 400px;
   width: 90%;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-lg);
+  animation: modalContentFadeIn 0.3s ease-out;
+}
+
+@keyframes modalContentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-content h2 {
@@ -189,17 +244,24 @@ button:hover {
 }
 
 .pagination-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.75rem 1.25rem;
   background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
 }
 
 .pagination-btn:hover {
   background-color: var(--hover-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.pagination-btn:active {
+  transform: translateY(0);
 }
 
 .pagination-btn.hidden {
