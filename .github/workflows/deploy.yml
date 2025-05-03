@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Deploy TS Todo App
 
 on:
   push:
@@ -23,52 +23,73 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install -g terser clean-css-cli
+          npm install -g terser clean-css-cli typescript webpack webpack-cli
           npm install
+
+      - name: Type Check
+        run: npx tsc --noEmit
+
+      - name: Build project
+        run: |
+          echo "Building project..."
+          npm run build
+          ls -la dist/
 
       - name: Minify JavaScript
         run: |
+          if [ ! -f dist/bundle.js ]; then
+            echo "Error: bundle.js not found in dist directory"
+            exit 1
+          fi
           echo "Original JS file size:"
-          ls -lh script.js
-          terser script.js -o script.min.js --compress --mangle
+          ls -lh dist/bundle.js
+          terser dist/bundle.js -o dist/bundle.min.js --compress --mangle
           echo "Minified JS file size:"
-          ls -lh script.min.js
-          if [ ! -f script.min.js ]; then
-            echo "Error: script.min.js was not created"
+          ls -lh dist/bundle.min.js
+          if [ ! -f dist/bundle.min.js ]; then
+            echo "Error: bundle.min.js was not created"
             exit 1
           fi
 
       - name: Minify CSS
         run: |
+          if [ ! -f dist/styles.css ]; then
+            echo "Error: styles.css not found in dist directory"
+            exit 1
+          fi
           echo "Original CSS file size:"
-          ls -lh styles.css
-          cleancss -o styles.min.css styles.css
+          ls -lh dist/styles.css
+          cleancss -o dist/styles.min.css dist/styles.css
           echo "Minified CSS file size:"
-          ls -lh styles.min.css
-          if [ ! -f styles.min.css ]; then
+          ls -lh dist/styles.min.css
+          if [ ! -f dist/styles.min.css ]; then
             echo "Error: styles.min.css was not created"
             exit 1
           fi
 
       - name: Update HTML
         run: |
+          if [ ! -f dist/index.html ]; then
+            echo "Error: index.html not found in dist directory"
+            exit 1
+          fi
           echo "Updating HTML file references..."
           awk '{
-            gsub(/script\.js/, "script.min.js");
+            gsub(/bundle\.js/, "bundle.min.js");
             gsub(/styles\.css/, "styles.min.css");
             print
-          }' index.html > index.html.tmp
+          }' dist/index.html > dist/index.html.tmp
 
-          mv index.html.tmp index.html
+          mv dist/index.html.tmp dist/index.html
 
           echo "Updated HTML content:"
-          cat index.html
+          cat dist/index.html
 
       - name: Verify files
         run: |
           echo "Checking files before deploy:"
-          ls -la
-          if [ ! -f script.min.js ] || [ ! -f styles.min.css ]; then
+          ls -la dist/
+          if [ ! -f dist/bundle.min.js ] || [ ! -f dist/styles.min.css ]; then
             echo "Error: Minified files are missing"
             exit 1
           fi
@@ -77,7 +98,7 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./
+          publish_dir: ./dist
           publish_branch: gh-pages
           force_orphan: true
           commit_message: "Deploy: Update with minified files"
