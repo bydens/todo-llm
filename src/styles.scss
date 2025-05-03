@@ -1,0 +1,291 @@
+// Variables
+$primary-color: #3b82f6;
+$secondary-color: #f3f4f6;
+$text-color: #1f2937;
+$border-color: #e5e7eb;
+$hover-color: #2563eb;
+$modal-overlay: rgba(0, 0, 0, 0.3);
+$disabled-color: #9ca3af;
+$shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+$shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+$transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Reset
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+// Base styles
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  color: $text-color;
+  background-color: #f9f9f9;
+}
+
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: $shadow-lg;
+  transition: $transition;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: $primary-color;
+}
+
+// Todo input
+.todo-input {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+#newTodo {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: 1px solid $border-color;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: $transition;
+  box-shadow: $shadow-sm;
+  background-color: white;
+  color: $text-color;
+  width: 100%;
+  height: auto;
+  min-height: 2.5rem;
+  line-height: 1.5;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  &::placeholder {
+    color: $disabled-color;
+  }
+}
+
+button {
+  padding: 0.75rem 1.25rem;
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: $transition;
+  box-shadow: $shadow-sm;
+  font-weight: 500;
+
+  &:hover {
+    background-color: $hover-color;
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Filters
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filter-btn {
+  flex: 1;
+  background-color: $secondary-color;
+  color: $text-color;
+
+  &.active {
+    background-color: $primary-color;
+    color: white;
+  }
+}
+
+// Todo list
+.todo-list {
+  list-style: none;
+  margin-bottom: 1rem;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid $border-color;
+  transition: $transition;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: $secondary-color;
+    transform: translateX(4px);
+  }
+}
+
+.todo-checkbox {
+  margin-right: 0.5rem;
+}
+
+.todo-text {
+  flex: 1;
+
+  &.completed {
+    text-decoration: line-through;
+    color: #888;
+  }
+}
+
+.delete-btn {
+  background-color: #ff4444;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+
+  &:hover {
+    background-color: #cc0000;
+  }
+}
+
+// Todo stats
+.todo-stats {
+  text-align: center;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+// Modal
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: $modal-overlay;
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+
+  &[aria-hidden="false"] {
+    display: flex;
+    animation: modalFadeIn 0.3s ease-out;
+  }
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-content {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: $shadow-lg;
+  animation: modalContentFadeIn 0.3s ease-out;
+}
+
+@keyframes modalContentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-content h2 {
+  margin-bottom: 1rem;
+  color: $text-color;
+}
+
+.modal-content p {
+  margin-bottom: 1.5rem;
+  color: $text-color;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.cancel-btn {
+  background-color: $secondary-color;
+  color: $text-color;
+
+  &:hover {
+    background-color: #e0e0e0;
+  }
+}
+
+// Pagination
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.pagination-btn {
+  padding: 0.75rem 1.25rem;
+  background-color: $primary-color;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: $transition;
+  box-shadow: $shadow-sm;
+
+  &:hover {
+    background-color: $hover-color;
+    transform: translateY(-1px);
+    box-shadow: $shadow-md;
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &.hidden {
+    display: none;
+  }
+}
+
+.page-info {
+  color: $text-color;
+  font-size: 0.9rem;
+}

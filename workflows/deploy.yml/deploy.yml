@@ -1,0 +1,89 @@
+name: Deploy TS Todo App
+
+on:
+  push:
+    branches: [build]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          npm install -g terser clean-css-cli typescript
+          npm install
+
+      - name: Type Check
+        run: npx tsc --noEmit
+
+      - name: Build TypeScript
+        run: npx tsc
+
+      - name: Minify JavaScript
+        run: |
+          echo "Original JS file size:"
+          ls -lh dist/script.js
+          terser dist/script.js -o dist/script.min.js --compress --mangle
+          echo "Minified JS file size:"
+          ls -lh dist/script.min.js
+          if [ ! -f dist/script.min.js ]; then
+            echo "Error: script.min.js was not created"
+            exit 1
+          fi
+
+      - name: Minify CSS
+        run: |
+          echo "Original CSS file size:"
+          ls -lh dist/styles.css
+          cleancss -o dist/styles.min.css dist/styles.css
+          echo "Minified CSS file size:"
+          ls -lh dist/styles.min.css
+          if [ ! -f dist/styles.min.css ]; then
+            echo "Error: styles.min.css was not created"
+            exit 1
+          fi
+
+      - name: Update HTML
+        run: |
+          echo "Updating HTML file references..."
+          awk '{
+            gsub(/script\.js/, "script.min.js");
+            gsub(/styles\.css/, "styles.min.css");
+            print
+          }' dist/index.html > dist/index.html.tmp
+
+          mv dist/index.html.tmp dist/index.html
+
+          echo "Updated HTML content:"
+          cat dist/index.html
+
+      - name: Verify files
+        run: |
+          echo "Checking files before deploy:"
+          ls -la dist/
+          if [ ! -f dist/script.min.js ] || [ ! -f dist/styles.min.css ]; then
+            echo "Error: Minified files are missing"
+            exit 1
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "Deploy: Update with minified files"
