@@ -2,7 +2,7 @@ name: Deploy Angular 19 App
 
 on:
   push:
-    branches: [build]
+    branches: [build-ang]
 
 permissions:
   contents: write
