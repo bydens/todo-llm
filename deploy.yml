@@ -1,0 +1,41 @@
+name: Deploy Angular 19 App
+
+on:
+  push:
+    branches: [build]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: |
+          echo "Building project..."
+          ng build --configuration production
+          ls -la dist/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist/<your-project-name>
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "Deploy: Build from {{ github.sha }}"
