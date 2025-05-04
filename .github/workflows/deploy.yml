@@ -28,7 +28,7 @@ jobs:
       - name: Build project
         run: |
           echo "Building project..."
-          npx ng build --configuration production
+          npx ng build --configuration production --base-href /todo-llm/
           ls -la dist/
 
       - name: Deploy to GitHub Pages
