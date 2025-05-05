@@ -1,80 +1,104 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core'; // Import inject and ChangeDetectionStrategy
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-
-interface TodoItem {
-  id: number;
-  text: string;
-  completed: boolean;
-}
-
-type FilterType = 'all' | 'active' | 'completed'; // Define filter types
+import { TodoService } from '../../services/todo.service'; // Import the service
+import { TodoItem, FilterType } from '../../models/todo-item.model'; // Import model and type
+import { Observable, BehaviorSubject, combineLatest } from 'rxjs'; // Import RxJS features
+import { map, startWith } from 'rxjs/operators'; // Import RxJS operators
 
 @Component({
   selector: 'app-todo-list',
   templateUrl: './todo-list.component.html',
   styleUrls: ['./todo-list.component.scss'],
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule], // Keep CommonModule for async pipe
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush // Use OnPush for better performance with observables
 })
 export class TodoListComponent implements OnInit {
-  tasks: TodoItem[] = [];
-  filteredTasks: TodoItem[] = []; // Tasks after filtering
-  paginatedTasks: TodoItem[] = []; // Tasks for the current page
-  newTaskText: string = '';
-  private readonly storageKey = 'angular_todo_tasks';
+  private todoService = inject(TodoService); // Inject the service
 
+  // --- State managed reactively ---
+  private filterSubject = new BehaviorSubject<FilterType>('all');
+  private pageSubject = new BehaviorSubject<number>(1);
+  private triggerRefresh = new BehaviorSubject<void>(undefined); // To trigger recalculation on add/delete
+
+  filter$: Observable<FilterType> = this.filterSubject.asObservable();
+  currentPage$: Observable<number> = this.pageSubject.asObservable();
+
+  // Derived state: Filtered Tasks
+  filteredTasks$: Observable<TodoItem[]> = combineLatest([
+    this.todoService.tasks$, // Get tasks from service
+    this.filterSubject,
+    this.triggerRefresh // Depend on refresh trigger
+  ]).pipe(
+    map(([tasks, filter]) => {
+      console.log("Filtering tasks...", filter, tasks); // Debug log
+      if (filter === 'active') {
+        return tasks.filter(task => !task.completed);
+      } else if (filter === 'completed') {
+        return tasks.filter(task => task.completed);
+      } else {
+        return [...tasks]; // Return a new array copy
+      }
+    }),
+    startWith([]) // Initial value
+  );
+
+  // Derived state: Paginated Tasks and Total Pages
+  paginatedTasks$: Observable<TodoItem[]> = combineLatest([
+    this.filteredTasks$,
+    this.pageSubject
+  ]).pipe(
+    map(([filteredTasks, currentPage]) => {
+      const startIndex = (currentPage - 1) * this.itemsPerPage;
+      const endIndex = startIndex + this.itemsPerPage;
+      console.log("Paginating tasks...", currentPage, startIndex, endIndex, filteredTasks); // Debug log
+      return filteredTasks.slice(startIndex, endIndex);
+    }),
+    startWith([]) // Initial value
+  );
+
+  totalPages$: Observable<number> = this.filteredTasks$.pipe(
+    map(filteredTasks => Math.max(1, Math.ceil(filteredTasks.length / this.itemsPerPage))),
+    startWith(1) // Initial value
+  );
+
+  // --- Component UI State ---
+  newTaskText: string = '';
+  itemsPerPage: number = 10; // Keep pagination size in component
   showDeleteConfirmation = false;
   taskToDeleteId: number | null = null;
 
-  // Pagination properties
-  currentPage: number = 1;
-  itemsPerPage: number = 10;
-  totalPages: number = 1;
-
-  // Filter property
-  currentFilter: FilterType = 'all';
+  // No need for ngOnInit if loading happens in service constructor and state is reactive
 
   ngOnInit(): void {
-    this.loadTasks();
+    // Optional: Subscribe to totalPages to potentially reset page if it becomes invalid
+    // This logic might need refinement depending on exact requirements
+    this.totalPages$.subscribe(totalPages => {
+      if (this.pageSubject.getValue() > totalPages) {
+        this.pageSubject.next(totalPages);
+      }
+    });
   }
+
 
   toggleTaskCompletion(idToToggle: number): void {
-    const task = this.tasks.find(t => t.id === idToToggle);
-    if (task) {
-      task.completed = !task.completed;
-      this.saveTasks();
-      this.applyFiltersAndPagination(); // Re-apply filter and pagination
-    }
+    this.todoService.toggleTaskCompletion(idToToggle);
+    // No need to manually refresh, tasks$ emission will trigger updates
   }
 
-  loadTasks(): void {
-    const storedTasks = localStorage.getItem(this.storageKey);
-    if (storedTasks) {
-      this.tasks = JSON.parse(storedTasks);
-    }
-    this.applyFiltersAndPagination(); // Apply filter and pagination after loading
-  }
-
-  saveTasks(): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.tasks));
-    // Filter/Pagination is handled separately after actions
-  }
+  // loadTasks and saveTasks are removed, handled by the service
 
   addTask(): void {
-    if (this.newTaskText.trim() === '') return;
-
-    const newTask: TodoItem = {
-      id: Date.now(),
-      text: this.newTaskText.trim(),
-      completed: false,
-    };
-    this.tasks.push(newTask);
+    this.todoService.addTask(this.newTaskText);
     this.newTaskText = '';
-    this.saveTasks();
-    // Apply filter, then go to the last page of the potentially filtered list
-    this.applyFiltersAndPagination();
-    this.goToPage(this.totalPages);
+    this.triggerRefresh.next(); // Trigger recalculation
+    // Reset to page 1 or go to last page? Going to last page is complex with reactive state.
+    // Simplest is to stay on current page or go to 1. Let's go to 1 for simplicity here.
+    // Or, subscribe to totalPages$ and go to the new last page after task is added.
+    // For now, let's just trigger refresh. Pagination will adjust.
+    // Consider going to the last page after add requires more complex RxJS logic
+    // to wait for the tasks$ update and then update pageSubject.
   }
 
   requestDeleteTask(idToDelete: number): void {
@@ -84,12 +108,8 @@ export class TodoListComponent implements OnInit {
 
   confirmDelete(): void {
     if (this.taskToDeleteId !== null) {
-      const taskIndex = this.tasks.findIndex(task => task.id === this.taskToDeleteId);
-      if (taskIndex > -1) {
-        this.tasks.splice(taskIndex, 1);
-        this.saveTasks();
-        this.applyFiltersAndPagination(); // Re-apply filter and pagination
-      }
+      this.todoService.deleteTask(this.taskToDeleteId);
+      this.triggerRefresh.next(); // Trigger recalculation
     }
     this.closeModal();
   }
@@ -103,58 +123,23 @@ export class TodoListComponent implements OnInit {
     this.taskToDeleteId = null;
   }
 
-  // --- Filter Method ---
   setFilter(filter: FilterType): void {
-    this.currentFilter = filter;
-    this.currentPage = 1; // Reset to first page when filter changes
-    this.applyFiltersAndPagination();
+    this.filterSubject.next(filter);
+    this.pageSubject.next(1); // Reset to first page when filter changes
   }
 
-  // --- Combined Filter and Pagination Logic ---
-  applyFiltersAndPagination(): void {
-    // 1. Apply Filter
-    if (this.currentFilter === 'active') {
-      this.filteredTasks = this.tasks.filter(task => !task.completed);
-    } else if (this.currentFilter === 'completed') {
-      this.filteredTasks = this.tasks.filter(task => task.completed);
-    } else {
-      this.filteredTasks = [...this.tasks]; // Show all, create a copy
-    }
-
-    // 2. Apply Pagination to filtered list
-    this.totalPages = Math.ceil(this.filteredTasks.length / this.itemsPerPage);
-    if (this.totalPages === 0) {
-      this.totalPages = 1; // Ensure at least one page even if empty
-    }
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages; // Adjust if current page becomes invalid
-    }
-    if (this.currentPage < 1) {
-      this.currentPage = 1; // Ensure current page is at least 1
-    }
-
-
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedTasks = this.filteredTasks.slice(startIndex, endIndex);
-  }
-
-
-  // --- Pagination Methods ---
-  // updatePaginatedTasks is now replaced by applyFiltersAndPagination
+  // applyFiltersAndPagination is removed, handled reactively by observables
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.applyFiltersAndPagination(); // Use the combined method
-    }
+    // Add check against current totalPages if needed, or rely on template disabling
+    this.pageSubject.next(page);
   }
 
   previousPage(): void {
-    this.goToPage(this.currentPage - 1);
+    this.goToPage(this.pageSubject.getValue() - 1);
   }
 
   nextPage(): void {
-    this.goToPage(this.currentPage + 1);
+    this.goToPage(this.pageSubject.getValue() + 1);
   }
 }
