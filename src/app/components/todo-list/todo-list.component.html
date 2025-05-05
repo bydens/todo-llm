@@ -1,44 +1,12 @@
-<div class="input-group mb-3">
-  <input
-    type="text"
-    [(ngModel)]="newTaskText"
-    class="form-control"
-    placeholder="Add a new task..."
-    (keyup.enter)="addTask()"
-  />
-  <button class="btn btn-primary" type="button" (click)="addTask()">Add</button>
-</div>
+<!-- Use the new TodoAddComponent -->
+<app-todo-add (addTask)="addTask($event)"></app-todo-add>
 
-<!-- Filter Buttons -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h5 class="mb-0">Tasks</h5>
-  <div class="btn-group" role="group" aria-label="Task filters">
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      [class.active]="(filter$ | async) === 'all'"
-      (click)="setFilter('all')"
-    >
-      All
-    </button>
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      [class.active]="(filter$ | async) === 'active'"
-      (click)="setFilter('active')"
-    >
-      Active
-    </button>
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      [class.active]="(filter$ | async) === 'completed'"
-      (click)="setFilter('completed')"
-    >
-      Completed
-    </button>
-  </div>
-</div>
+<!-- Use the new TodoFilterComponent -->
+<!-- Use async pipe for filter$ -->
+<app-todo-filter
+  [currentFilter]="(filter$ | async) ?? 'all'"
+  (filterChange)="setFilter($event)"
+></app-todo-filter>
 
 <!-- Use async pipe for paginatedTasks$ -->
 <div class="list-group mb-3" *ngIf="paginatedTasks$ | async as paginatedTasks">
@@ -51,7 +19,6 @@
       <span *ngIf="(filter$ | async) === 'active'">No active tasks.</span>
       <span *ngIf="(filter$ | async) === 'completed'">No completed tasks.</span>
     </li>
-    <!-- Replace the <li> content with the app-todo-item component -->
     <app-todo-item
       *ngFor="let task of paginatedTasks"
       [task]="task"
@@ -105,7 +72,7 @@
   </ul>
 </nav>
 
-<!-- Add the new confirmation modal component -->
+<!-- Confirmation Modal remains the same -->
 <app-confirmation-modal
   [isOpen]="showDeleteConfirmation"
   title="Confirm Deletion"

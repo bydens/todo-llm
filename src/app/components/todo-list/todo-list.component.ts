@@ -1,25 +1,29 @@
-import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core'; // Import inject and ChangeDetectionStrategy
-import { FormsModule } from '@angular/forms';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
+// Remove FormsModule if no longer needed directly in this component
 import { CommonModule } from '@angular/common';
-import { TodoService } from '../../services/todo.service'; // Import the service
-import { TodoItem, FilterType } from '../../models/todo-item.model'; // Import model and type
-import { Observable, BehaviorSubject, combineLatest } from 'rxjs'; // Import RxJS features
-import { map, startWith } from 'rxjs/operators'; // Import RxJS operators
-import { TodoItemComponent } from '../todo-item/todo-item.component'; // Import the new component
-import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal.component'; // Import the modal component
+import { TodoService } from '../../services/todo.service';
+import { TodoItem, FilterType } from '../../models/todo-item.model';
+import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
+import { TodoItemComponent } from '../todo-item/todo-item.component';
+import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal.component';
+import { TodoAddComponent } from '../todo-add/todo-add.component'; // Import new component
+import { TodoFilterComponent } from '../todo-filter/todo-filter.component'; // Import new component
 
 @Component({
   selector: 'app-todo-list',
   templateUrl: './todo-list.component.html',
   styleUrls: ['./todo-list.component.scss'],
   imports: [
-    FormsModule,
+    // Remove FormsModule if not used
     CommonModule,
     TodoItemComponent,
-    ConfirmationModalComponent // Add ConfirmationModalComponent here
+    ConfirmationModalComponent,
+    TodoAddComponent, // Add new component
+    TodoFilterComponent // Add new component
   ],
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush // Use OnPush for better performance with observables
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TodoListComponent implements OnInit {
   private todoService = inject(TodoService); // Inject the service
@@ -71,7 +75,6 @@ export class TodoListComponent implements OnInit {
   );
 
   // --- Component UI State ---
-  newTaskText: string = '';
   itemsPerPage: number = 10; // Keep pagination size in component
   showDeleteConfirmation = false;
   taskToDeleteId: number | null = null;
@@ -88,7 +91,6 @@ export class TodoListComponent implements OnInit {
     });
   }
 
-
   toggleTaskCompletion(idToToggle: number): void {
     this.todoService.toggleTaskCompletion(idToToggle);
     // No need to manually refresh, tasks$ emission will trigger updates
@@ -96,16 +98,11 @@ export class TodoListComponent implements OnInit {
 
   // loadTasks and saveTasks are removed, handled by the service
 
-  addTask(): void {
-    this.todoService.addTask(this.newTaskText);
-    this.newTaskText = '';
-    this.triggerRefresh.next(); // Trigger recalculation
-    // Reset to page 1 or go to last page? Going to last page is complex with reactive state.
-    // Simplest is to stay on current page or go to 1. Let's go to 1 for simplicity here.
-    // Or, subscribe to totalPages$ and go to the new last page after task is added.
-    // For now, let's just trigger refresh. Pagination will adjust.
-    // Consider going to the last page after add requires more complex RxJS logic
-    // to wait for the tasks$ update and then update pageSubject.
+  // Updated addTask to accept text from the event
+  addTask(text: string): void {
+    this.todoService.addTask(text);
+    this.triggerRefresh.next();
+    // Consider pagination adjustment logic if needed
   }
 
   requestDeleteTask(idToDelete: number): void {
@@ -130,6 +127,7 @@ export class TodoListComponent implements OnInit {
     this.taskToDeleteId = null;
   }
 
+  // Updated setFilter to accept filter from the event
   setFilter(filter: FilterType): void {
     this.filterSubject.next(filter);
     this.pageSubject.next(1); // Reset to first page when filter changes
