@@ -6,6 +6,7 @@ import { TodoItem, FilterType } from '../../models/todo-item.model'; // Import m
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs'; // Import RxJS features
 import { map, startWith } from 'rxjs/operators'; // Import RxJS operators
 import { TodoItemComponent } from '../todo-item/todo-item.component'; // Import the new component
+import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal.component'; // Import the modal component
 
 @Component({
   selector: 'app-todo-list',
@@ -14,7 +15,8 @@ import { TodoItemComponent } from '../todo-item/todo-item.component'; // Import 
   imports: [
     FormsModule,
     CommonModule,
-    TodoItemComponent // Add TodoItemComponent here
+    TodoItemComponent,
+    ConfirmationModalComponent // Add ConfirmationModalComponent here
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush // Use OnPush for better performance with observables

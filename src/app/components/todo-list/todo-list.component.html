@@ -105,45 +105,12 @@
   </ul>
 </nav>
 
-<!-- Modal remains the same -->
-<div
-  class="modal"
-  tabindex="-1"
-  [style.display]="showDeleteConfirmation ? 'block' : 'none'"
-  [class.show]="showDeleteConfirmation"
->
-  <!-- ... modal content ... -->
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Confirm Deletion</h5>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          (click)="cancelDelete()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>Are you sure you want to delete this task?</p>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="cancelDelete()"
-        >
-          Cancel
-        </button>
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()">
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-<div
-  class="modal-backdrop fade"
-  [class.show]="showDeleteConfirmation"
-  [style.display]="showDeleteConfirmation ? 'block' : 'none'"
-></div>
+<!-- Add the new confirmation modal component -->
+<app-confirmation-modal
+  [isOpen]="showDeleteConfirmation"
+  title="Confirm Deletion"
+  message="Are you sure you want to delete this task?"
+  confirmButtonText="Delete"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()"
+></app-confirmation-modal>
