@@ -1,18 +1,13 @@
-<!-- Use the new TodoAddComponent -->
 <app-todo-add (addTask)="addTask($event)"></app-todo-add>
 
-<!-- Use the new TodoFilterComponent -->
-<!-- Use async pipe for filter$ -->
 <app-todo-filter
   [currentFilter]="(filter$ | async) ?? 'all'"
   (filterChange)="setFilter($event)"
 ></app-todo-filter>
 
-<!-- Use async pipe for paginatedTasks$ -->
 <div class="list-group mb-3" *ngIf="paginatedTasks$ | async as paginatedTasks">
   <ul class="list-group">
     <li *ngIf="paginatedTasks.length === 0" class="list-group-item text-muted">
-      <!-- Use async pipe for filter$ -->
       <span *ngIf="(filter$ | async) === 'all'"
         >No tasks yet! Add one above.</span
       >
@@ -28,12 +23,10 @@
   </ul>
 </div>
 
-<!-- Pagination Controls - Use async pipe for filteredTasks$ and totalPages$ -->
 <nav
   aria-label="Task pagination"
   *ngIf="(filteredTasks$ | async)?.length ?? 0 > itemsPerPage"
 >
-  <!-- Use async pipe for currentPage$ and totalPages$ -->
   <ul
     class="pagination justify-content-center"
     *ngIf="{
@@ -72,7 +65,6 @@
   </ul>
 </nav>
 
-<!-- Confirmation Modal remains the same -->
 <app-confirmation-modal
   [isOpen]="showDeleteConfirmation"
   title="Confirm Deletion"

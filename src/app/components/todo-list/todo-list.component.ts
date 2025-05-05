@@ -1,5 +1,4 @@
 import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
-// Remove FormsModule if no longer needed directly in this component
 import { CommonModule } from '@angular/common';
 import { TodoService } from '../../services/todo.service';
 import { TodoItem, FilterType } from '../../models/todo-item.model';
@@ -7,20 +6,19 @@ import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { TodoItemComponent } from '../todo-item/todo-item.component';
 import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal.component';
-import { TodoAddComponent } from '../todo-add/todo-add.component'; // Import new component
-import { TodoFilterComponent } from '../todo-filter/todo-filter.component'; // Import new component
+import { TodoAddComponent } from '../todo-add/todo-add.component';
+import { TodoFilterComponent } from '../todo-filter/todo-filter.component';
 
 @Component({
   selector: 'app-todo-list',
   templateUrl: './todo-list.component.html',
   styleUrls: ['./todo-list.component.scss'],
   imports: [
-    // Remove FormsModule if not used
     CommonModule,
     TodoItemComponent,
     ConfirmationModalComponent,
-    TodoAddComponent, // Add new component
-    TodoFilterComponent // Add new component
+    TodoAddComponent,
+    TodoFilterComponent
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -28,7 +26,6 @@ import { TodoFilterComponent } from '../todo-filter/todo-filter.component'; // I
 export class TodoListComponent implements OnInit {
   private todoService = inject(TodoService); // Inject the service
 
-  // --- State managed reactively ---
   private filterSubject = new BehaviorSubject<FilterType>('all');
   private pageSubject = new BehaviorSubject<number>(1);
   private triggerRefresh = new BehaviorSubject<void>(undefined); // To trigger recalculation on add/delete
@@ -36,26 +33,24 @@ export class TodoListComponent implements OnInit {
   filter$: Observable<FilterType> = this.filterSubject.asObservable();
   currentPage$: Observable<number> = this.pageSubject.asObservable();
 
-  // Derived state: Filtered Tasks
   filteredTasks$: Observable<TodoItem[]> = combineLatest([
-    this.todoService.tasks$, // Get tasks from service
+    this.todoService.tasks$,
     this.filterSubject,
-    this.triggerRefresh // Depend on refresh trigger
+    this.triggerRefresh
   ]).pipe(
     map(([tasks, filter]) => {
-      console.log("Filtering tasks...", filter, tasks); // Debug log
+      console.log("Filtering tasks...", filter, tasks);
       if (filter === 'active') {
         return tasks.filter(task => !task.completed);
       } else if (filter === 'completed') {
         return tasks.filter(task => task.completed);
       } else {
-        return [...tasks]; // Return a new array copy
+        return [...tasks];
       }
     }),
-    startWith([]) // Initial value
+    startWith([])
   );
 
-  // Derived state: Paginated Tasks and Total Pages
   paginatedTasks$: Observable<TodoItem[]> = combineLatest([
     this.filteredTasks$,
     this.pageSubject
@@ -66,24 +61,20 @@ export class TodoListComponent implements OnInit {
       console.log("Paginating tasks...", currentPage, startIndex, endIndex, filteredTasks); // Debug log
       return filteredTasks.slice(startIndex, endIndex);
     }),
-    startWith([]) // Initial value
+    startWith([])
   );
 
   totalPages$: Observable<number> = this.filteredTasks$.pipe(
     map(filteredTasks => Math.max(1, Math.ceil(filteredTasks.length / this.itemsPerPage))),
-    startWith(1) // Initial value
+    startWith(1)
   );
 
-  // --- Component UI State ---
-  itemsPerPage: number = 10; // Keep pagination size in component
+  itemsPerPage: number = 10;
   showDeleteConfirmation = false;
   taskToDeleteId: number | null = null;
 
-  // No need for ngOnInit if loading happens in service constructor and state is reactive
 
   ngOnInit(): void {
-    // Optional: Subscribe to totalPages to potentially reset page if it becomes invalid
-    // This logic might need refinement depending on exact requirements
     this.totalPages$.subscribe(totalPages => {
       if (this.pageSubject.getValue() > totalPages) {
         this.pageSubject.next(totalPages);
@@ -93,16 +84,11 @@ export class TodoListComponent implements OnInit {
 
   toggleTaskCompletion(idToToggle: number): void {
     this.todoService.toggleTaskCompletion(idToToggle);
-    // No need to manually refresh, tasks$ emission will trigger updates
   }
 
-  // loadTasks and saveTasks are removed, handled by the service
-
-  // Updated addTask to accept text from the event
   addTask(text: string): void {
     this.todoService.addTask(text);
     this.triggerRefresh.next();
-    // Consider pagination adjustment logic if needed
   }
 
   requestDeleteTask(idToDelete: number): void {
@@ -113,7 +99,7 @@ export class TodoListComponent implements OnInit {
   confirmDelete(): void {
     if (this.taskToDeleteId !== null) {
       this.todoService.deleteTask(this.taskToDeleteId);
-      this.triggerRefresh.next(); // Trigger recalculation
+      this.triggerRefresh.next();
     }
     this.closeModal();
   }
@@ -127,16 +113,12 @@ export class TodoListComponent implements OnInit {
     this.taskToDeleteId = null;
   }
 
-  // Updated setFilter to accept filter from the event
   setFilter(filter: FilterType): void {
     this.filterSubject.next(filter);
-    this.pageSubject.next(1); // Reset to first page when filter changes
+    this.pageSubject.next(1);
   }
 
-  // applyFiltersAndPagination is removed, handled reactively by observables
-
   goToPage(page: number): void {
-    // Add check against current totalPages if needed, or rely on template disabling
     this.pageSubject.next(page);
   }
 
