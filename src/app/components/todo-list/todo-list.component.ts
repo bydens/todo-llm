@@ -8,6 +8,8 @@ interface TodoItem {
   completed: boolean;
 }
 
+type FilterType = 'all' | 'active' | 'completed'; // Define filter types
+
 @Component({
   selector: 'app-todo-list',
   templateUrl: './todo-list.component.html',
@@ -17,6 +19,7 @@ interface TodoItem {
 })
 export class TodoListComponent implements OnInit {
   tasks: TodoItem[] = [];
+  filteredTasks: TodoItem[] = []; // Tasks after filtering
   paginatedTasks: TodoItem[] = []; // Tasks for the current page
   newTaskText: string = '';
   private readonly storageKey = 'angular_todo_tasks';
@@ -29,6 +32,9 @@ export class TodoListComponent implements OnInit {
   itemsPerPage: number = 10;
   totalPages: number = 1;
 
+  // Filter property
+  currentFilter: FilterType = 'all';
+
   ngOnInit(): void {
     this.loadTasks();
   }
@@ -38,7 +44,7 @@ export class TodoListComponent implements OnInit {
     if (task) {
       task.completed = !task.completed;
       this.saveTasks();
-      // No need to update pagination if only completion status changes
+      this.applyFiltersAndPagination(); // Re-apply filter and pagination
     }
   }
 
@@ -47,12 +53,12 @@ export class TodoListComponent implements OnInit {
     if (storedTasks) {
       this.tasks = JSON.parse(storedTasks);
     }
-    this.updatePaginatedTasks(); // Update pagination after loading
+    this.applyFiltersAndPagination(); // Apply filter and pagination after loading
   }
 
   saveTasks(): void {
     localStorage.setItem(this.storageKey, JSON.stringify(this.tasks));
-    // No need to update pagination here directly, it's updated after add/delete
+    // Filter/Pagination is handled separately after actions
   }
 
   addTask(): void {
@@ -66,7 +72,9 @@ export class TodoListComponent implements OnInit {
     this.tasks.push(newTask);
     this.newTaskText = '';
     this.saveTasks();
-    this.goToPage(this.totalPages); // Go to the last page where the new task is
+    // Apply filter, then go to the last page of the potentially filtered list
+    this.applyFiltersAndPagination();
+    this.goToPage(this.totalPages);
   }
 
   requestDeleteTask(idToDelete: number): void {
@@ -78,15 +86,9 @@ export class TodoListComponent implements OnInit {
     if (this.taskToDeleteId !== null) {
       const taskIndex = this.tasks.findIndex(task => task.id === this.taskToDeleteId);
       if (taskIndex > -1) {
-        this.tasks.splice(taskIndex, 1); // Use splice for potential performance benefit
+        this.tasks.splice(taskIndex, 1);
         this.saveTasks();
-
-        // Adjust current page if the last item on the current page was deleted
-        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-        if (startIndex >= this.tasks.length && this.currentPage > 1) {
-          this.currentPage--;
-        }
-        this.updatePaginatedTasks(); // Update pagination after deleting
+        this.applyFiltersAndPagination(); // Re-apply filter and pagination
       }
     }
     this.closeModal();
@@ -101,30 +103,50 @@ export class TodoListComponent implements OnInit {
     this.taskToDeleteId = null;
   }
 
-  // --- Pagination Methods ---
+  // --- Filter Method ---
+  setFilter(filter: FilterType): void {
+    this.currentFilter = filter;
+    this.currentPage = 1; // Reset to first page when filter changes
+    this.applyFiltersAndPagination();
+  }
 
-  updatePaginatedTasks(): void {
-    this.totalPages = Math.ceil(this.tasks.length / this.itemsPerPage);
-    if (this.currentPage > this.totalPages && this.totalPages > 0) {
+  // --- Combined Filter and Pagination Logic ---
+  applyFiltersAndPagination(): void {
+    // 1. Apply Filter
+    if (this.currentFilter === 'active') {
+      this.filteredTasks = this.tasks.filter(task => !task.completed);
+    } else if (this.currentFilter === 'completed') {
+      this.filteredTasks = this.tasks.filter(task => task.completed);
+    } else {
+      this.filteredTasks = [...this.tasks]; // Show all, create a copy
+    }
+
+    // 2. Apply Pagination to filtered list
+    this.totalPages = Math.ceil(this.filteredTasks.length / this.itemsPerPage);
+    if (this.totalPages === 0) {
+      this.totalPages = 1; // Ensure at least one page even if empty
+    }
+    if (this.currentPage > this.totalPages) {
       this.currentPage = this.totalPages; // Adjust if current page becomes invalid
     }
-    if (this.currentPage < 1 && this.totalPages > 0) {
+    if (this.currentPage < 1) {
       this.currentPage = 1; // Ensure current page is at least 1
     }
-    if (this.tasks.length === 0) {
-      this.totalPages = 1;
-      this.currentPage = 1;
-    }
+
 
     const startIndex = (this.currentPage - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedTasks = this.tasks.slice(startIndex, endIndex);
+    this.paginatedTasks = this.filteredTasks.slice(startIndex, endIndex);
   }
+
+
+  // --- Pagination Methods ---
+  // updatePaginatedTasks is now replaced by applyFiltersAndPagination
 
   goToPage(page: number): void {
     if (page >= 1 && page <= this.totalPages) {
       this.currentPage = page;
-      this.updatePaginatedTasks();
+      this.applyFiltersAndPagination(); // Use the combined method
     }
   }
 
