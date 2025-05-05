@@ -13,11 +13,15 @@ interface TodoItem {
   templateUrl: './todo-list.component.html',
   styleUrls: ['./todo-list.component.scss'],
   imports: [FormsModule, CommonModule],
+  standalone: true,
 })
 export class TodoListComponent implements OnInit {
   tasks: TodoItem[] = [];
   newTaskText: string = '';
   private readonly storageKey = 'angular_todo_tasks';
+
+  showDeleteConfirmation = false;
+  taskToDeleteId: number | null = null;
 
   ngOnInit(): void {
     this.loadTasks();
@@ -55,8 +59,25 @@ export class TodoListComponent implements OnInit {
     this.saveTasks();
   }
 
-  deleteTask(idToDelete: number): void {
-    this.tasks = this.tasks.filter(task => task.id !== idToDelete);
-    this.saveTasks();
+  requestDeleteTask(idToDelete: number): void {
+    this.taskToDeleteId = idToDelete;
+    this.showDeleteConfirmation = true;
+  }
+
+  confirmDelete(): void {
+    if (this.taskToDeleteId !== null) {
+      this.tasks = this.tasks.filter(task => task.id !== this.taskToDeleteId);
+      this.saveTasks();
+    }
+    this.closeModal();
+  }
+
+  cancelDelete(): void {
+    this.closeModal();
+  }
+
+  private closeModal(): void {
+    this.showDeleteConfirmation = false;
+    this.taskToDeleteId = null;
   }
 }

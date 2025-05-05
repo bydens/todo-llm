@@ -3,3 +3,10 @@
   max-width: 900px;
   margin: 2rem auto;
 }
+
+.modal {
+}
+
+.modal-backdrop.show {
+  opacity: 0.5;
+}
