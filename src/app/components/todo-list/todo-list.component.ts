@@ -5,12 +5,17 @@ import { TodoService } from '../../services/todo.service'; // Import the service
 import { TodoItem, FilterType } from '../../models/todo-item.model'; // Import model and type
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs'; // Import RxJS features
 import { map, startWith } from 'rxjs/operators'; // Import RxJS operators
+import { TodoItemComponent } from '../todo-item/todo-item.component'; // Import the new component
 
 @Component({
   selector: 'app-todo-list',
   templateUrl: './todo-list.component.html',
   styleUrls: ['./todo-list.component.scss'],
-  imports: [FormsModule, CommonModule], // Keep CommonModule for async pipe
+  imports: [
+    FormsModule,
+    CommonModule,
+    TodoItemComponent // Add TodoItemComponent here
+  ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush // Use OnPush for better performance with observables
 })

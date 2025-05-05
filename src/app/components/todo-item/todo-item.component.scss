@@ -1,0 +1,9 @@
+// filepath: /Users/denysbykanov/Projects/angular/todo-llm/src/app/components/todo-item/todo-item.component.scss
+:host {
+  // Add specific styles for the host element (the <app-todo-item>) if needed
+}
+
+// Styles for elements *inside* the component template can go here as usual
+.form-check-label {
+  word-break: break-word; // Example: prevent long text overflowing
+}
