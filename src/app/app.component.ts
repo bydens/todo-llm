@@ -3,6 +3,7 @@ import { TodoListComponent } from "./components/todo-list/todo-list.component";
 
 @Component({
   selector: 'app-root',
+  standalone: true, // Added standalone: true as TodoListComponent is standalone
   imports: [TodoListComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

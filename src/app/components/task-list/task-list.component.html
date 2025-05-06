@@ -1,12 +1,14 @@
 <div class="list-group mb-3">
   <ul class="list-group">
-    <li *ngIf="tasks.length === 0" class="list-group-item text-muted">
-      <span *ngIf="currentFilter === 'all'">No tasks yet! Add one above.</span>
-      <span *ngIf="currentFilter === 'active'">No active tasks.</span>
-      <span *ngIf="currentFilter === 'completed'">No completed tasks.</span>
+    <li *ngIf="tasks().length === 0" class="list-group-item text-muted">
+      <span *ngIf="currentFilter() === 'all'"
+        >No tasks yet! Add one above.</span
+      >
+      <span *ngIf="currentFilter() === 'active'">No active tasks.</span>
+      <span *ngIf="currentFilter() === 'completed'">No completed tasks.</span>
     </li>
     <app-todo-item
-      *ngFor="let task of tasks"
+      *ngFor="let task of tasks()"
       [task]="task"
       (toggleCompletion)="onToggleCompletion($event)"
       (requestDelete)="onRequestDelete($event)"

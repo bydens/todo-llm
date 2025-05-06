@@ -3,16 +3,16 @@
   <input
     class="form-check-input"
     type="checkbox"
-    [checked]="task.completed"
+    [checked]="task().completed"
     (change)="onToggle()"
-    [id]="'task-' + task.id"
+    [id]="'task-' + task().id"
   />
   <label
     class="form-check-label"
-    [for]="'task-' + task.id"
-    [class.text-decoration-line-through]="task.completed"
+    [for]="'task-' + task().id"
+    [class.text-decoration-line-through]="task().completed"
   >
-    {{ task.text }}
+    {{ task().text }}
   </label>
 </div>
 <button

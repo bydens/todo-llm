@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, input, InputSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FilterType } from '../../models/todo-item.model';
 
@@ -8,10 +8,10 @@ import { FilterType } from '../../models/todo-item.model';
   imports: [CommonModule],
   templateUrl: './todo-filter.component.html',
   styleUrls: ['./todo-filter.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  // ChangeDetectionStrategy.OnPush is implicitly handled well with signals
 })
 export class TodoFilterComponent {
-  @Input({ required: true }) currentFilter!: FilterType;
+  currentFilter: InputSignal<FilterType> = input.required<FilterType>();
   @Output() filterChange = new EventEmitter<FilterType>();
 
   readonly filters: FilterType[] = ['all', 'active', 'completed'];

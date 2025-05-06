@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, input, InputSignal, computed, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -7,13 +7,13 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   templateUrl: './task-pagination.component.html',
   styleUrls: ['./task-pagination.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  // ChangeDetectionStrategy.OnPush is implicitly handled well with signals
 })
 export class TaskPaginationComponent {
-  @Input() currentPage: number | null = 1;
-  @Input() totalPages: number | null = 1;
-  @Input() itemsPerPage: number = 10; // Needed to decide if pagination should be shown
-  @Input() totalFilteredItems: number = 0;
+  currentPage: InputSignal<number | null> = input<number | null>(1);
+  totalPages: InputSignal<number | null> = input<number | null>(1);
+  itemsPerPage: InputSignal<number> = input<number>(10);
+  totalFilteredItems: InputSignal<number> = input<number>(0);
 
 
   @Output() previous = new EventEmitter<void>();
@@ -27,7 +27,7 @@ export class TaskPaginationComponent {
     this.next.emit();
   }
 
-  get showPagination(): boolean {
-    return this.totalFilteredItems > this.itemsPerPage;
-  }
+  showPagination: Signal<boolean> = computed(() => {
+    return this.totalFilteredItems() > this.itemsPerPage();
+  });
 }

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy, HostBinding } from '@angular/core'; // Import HostBinding
+import { Component, Output, EventEmitter, HostBinding, input, InputSignal } from '@angular/core'; // Import input, InputSignal
 import { CommonModule } from '@angular/common';
 import { TodoItem } from '../../models/todo-item.model'; // Adjust path if needed
 
@@ -8,11 +8,11 @@ import { TodoItem } from '../../models/todo-item.model'; // Adjust path if neede
   imports: [CommonModule], // Needed for ngClass, ngIf etc.
   templateUrl: './todo-item.component.html',
   styleUrls: ['./todo-item.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  // ChangeDetectionStrategy.OnPush is implicitly handled well with signals
 })
 export class TodoItemComponent {
-  // Receive the task data from the parent
-  @Input({ required: true }) task!: TodoItem;
+  // Receive the task data from the parent using the new input() syntax
+  task: InputSignal<TodoItem> = input.required<TodoItem>();
 
   // Emit events when actions occur on this item
   @Output() toggleCompletion = new EventEmitter<number>();
@@ -20,18 +20,19 @@ export class TodoItemComponent {
 
   // --- HostBindings to make the component behave like a list item ---
   @HostBinding('class') get classes() {
-    return `list-group-item d-flex justify-content-between align-items-center ${this.task.completed ? 'list-group-item-secondary' : ''}`;
+    // Access signal value using ()
+    return `list-group-item d-flex justify-content-between align-items-center ${this.task().completed ? 'list-group-item-secondary' : ''}`;
   }
   @HostBinding('attr.data-task-id') get taskIdAttr() {
-    return this.task.id; // Optional: for easier debugging/testing
+    return this.task().id; // Optional: for easier debugging/testing
   }
   // --- End HostBindings ---
 
   onToggle(): void {
-    this.toggleCompletion.emit(this.task.id);
+    this.toggleCompletion.emit(this.task().id);
   }
 
   onDelete(): void {
-    this.requestDelete.emit(this.task.id);
+    this.requestDelete.emit(this.task().id);
   }
 }

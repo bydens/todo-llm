@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, input, InputSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -7,14 +7,14 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule], // Needed for ngIf, ngClass etc.
   templateUrl: './confirmation-modal.component.html',
   styleUrls: ['./confirmation-modal.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  // ChangeDetectionStrategy.OnPush is implicitly handled well with signals
 })
 export class ConfirmationModalComponent {
-  @Input() isOpen: boolean = false;
-  @Input() title: string = 'Confirm Action';
-  @Input() message: string = 'Are you sure?';
-  @Input() confirmButtonText: string = 'Confirm';
-  @Input() cancelButtonText: string = 'Cancel';
+  isOpen: InputSignal<boolean> = input<boolean>(false);
+  title: InputSignal<string> = input<string>('Confirm Action');
+  message: InputSignal<string> = input<string>('Are you sure?');
+  confirmButtonText: InputSignal<string> = input<string>('Confirm');
+  cancelButtonText: InputSignal<string> = input<string>('Cancel');
 
   @Output() confirm = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>(); // Emits on close button or cancel button

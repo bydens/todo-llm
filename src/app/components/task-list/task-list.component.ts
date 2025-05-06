@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, input, InputSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TodoItem } from '../../models/todo-item.model';
 import { TodoItemComponent } from '../todo-item/todo-item.component';
@@ -9,11 +9,11 @@ import { TodoItemComponent } from '../todo-item/todo-item.component';
   imports: [CommonModule, TodoItemComponent],
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  // ChangeDetectionStrategy.OnPush is implicitly handled well with signals
 })
 export class TaskListComponent {
-  @Input() tasks: TodoItem[] = [];
-  @Input() currentFilter: string | null = 'all'; // To display appropriate empty state message
+  tasks: InputSignal<TodoItem[]> = input<TodoItem[]>([]);
+  currentFilter: InputSignal<string | null> = input<string | null>('all'); // To display appropriate empty state message
 
   @Output() toggleCompletion = new EventEmitter<number>();
   @Output() requestDelete = new EventEmitter<number>();

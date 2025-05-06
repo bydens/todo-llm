@@ -1,28 +1,28 @@
 <app-todo-add (addTask)="addTask($event)"></app-todo-add>
 
 <app-todo-filter
-  [currentFilter]="(filter$ | async) ?? 'all'"
+  [currentFilter]="filter()"
   (filterChange)="setFilter($event)"
 ></app-todo-filter>
 
 <app-task-list
-  [tasks]="(paginatedTasks$ | async) ?? []"
-  [currentFilter]="filter$ | async"
+  [tasks]="paginatedTasks()"
+  [currentFilter]="filter()"
   (toggleCompletion)="toggleTaskCompletion($event)"
   (requestDelete)="requestDeleteTask($event)"
 ></app-task-list>
 
 <app-task-pagination
-  [currentPage]="currentPage$ | async"
-  [totalPages]="totalPages$ | async"
+  [currentPage]="currentPage()"
+  [totalPages]="totalPages()"
   [itemsPerPage]="itemsPerPage"
-  [totalFilteredItems]="(filteredTasks$ | async)?.length ?? 0"
+  [totalFilteredItems]="filteredTasks().length"
   (previous)="previousPage()"
   (next)="nextPage()"
 ></app-task-pagination>
 
 <app-confirmation-modal
-  [isOpen]="showDeleteConfirmation"
+  [isOpen]="showDeleteConfirmation()"
   title="Confirm Deletion"
   message="Are you sure you want to delete this task?"
   confirmButtonText="Delete"

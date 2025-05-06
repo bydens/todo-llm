@@ -5,7 +5,7 @@
       *ngFor="let filter of filters"
       type="button"
       class="btn btn-outline-secondary"
-      [class.active]="currentFilter === filter"
+      [class.active]="currentFilter() === filter"
       (click)="setFilter(filter)"
     >
       {{ filter | titlecase }}

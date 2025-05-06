@@ -1,5 +1,4 @@
-// filepath: /Users/denysbykanov/Projects/angular/todo-llm/src/app/services/todo.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, signal, WritableSignal } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { TodoItem } from '../models/todo-item.model'; // Assuming you move the interface
 
@@ -8,10 +7,10 @@ import { TodoItem } from '../models/todo-item.model'; // Assuming you move the i
 })
 export class TodoService {
   private readonly storageKey = 'angular_todo_tasks';
-  private tasksSubject = new BehaviorSubject<TodoItem[]>([]);
+  private tasksSignal: WritableSignal<TodoItem[]> = signal<TodoItem[]>([]);
 
-  // Expose tasks as an Observable
-  tasks$: Observable<TodoItem[]> = this.tasksSubject.asObservable();
+  // Expose tasks as a readonly signal
+  public readonly tasks = this.tasksSignal.asReadonly();
 
   constructor() {
     this.loadTasks(); // Load tasks when the service is instantiated
@@ -20,12 +19,12 @@ export class TodoService {
   private loadTasks(): void {
     const storedTasks = localStorage.getItem(this.storageKey);
     const tasks = storedTasks ? (JSON.parse(storedTasks) as TodoItem[]) : [];
-    this.tasksSubject.next(tasks);
+    this.tasksSignal.set(tasks);
   }
 
   private saveTasks(tasks: TodoItem[]): void {
     localStorage.setItem(this.storageKey, JSON.stringify(tasks));
-    this.tasksSubject.next(tasks); // Update the observable stream
+    this.tasksSignal.set(tasks); // Update the signal
   }
 
   addTask(text: string): void {
@@ -35,26 +34,28 @@ export class TodoService {
       text: text.trim(),
       completed: false,
     };
-    const currentTasks = this.tasksSubject.getValue();
-    this.saveTasks([...currentTasks, newTask]);
+    this.tasksSignal.update(currentTasks => [...currentTasks, newTask]);
+    localStorage.setItem(this.storageKey, JSON.stringify(this.tasksSignal())); // Save after update
   }
 
   toggleTaskCompletion(idToToggle: number): void {
-    const currentTasks = this.tasksSubject.getValue();
-    const updatedTasks = currentTasks.map(task =>
-      task.id === idToToggle ? { ...task, completed: !task.completed } : task
+    this.tasksSignal.update(currentTasks =>
+      currentTasks.map(task =>
+        task.id === idToToggle ? { ...task, completed: !task.completed } : task
+      )
     );
-    this.saveTasks(updatedTasks);
+    localStorage.setItem(this.storageKey, JSON.stringify(this.tasksSignal())); // Save after update
   }
 
   deleteTask(idToDelete: number): void {
-    const currentTasks = this.tasksSubject.getValue();
-    const updatedTasks = currentTasks.filter(task => task.id !== idToDelete);
-    this.saveTasks(updatedTasks);
+    this.tasksSignal.update(currentTasks =>
+      currentTasks.filter(task => task.id !== idToDelete)
+    );
+    localStorage.setItem(this.storageKey, JSON.stringify(this.tasksSignal())); // Save after update
   }
 
-  // Optional: Method to get current tasks synchronously if needed elsewhere, though observables are preferred
+  // Optional: Method to get current tasks synchronously if needed elsewhere
   getCurrentTasks(): TodoItem[] {
-    return this.tasksSubject.getValue();
+    return this.tasksSignal();
   }
 }
