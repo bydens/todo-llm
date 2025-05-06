@@ -1,0 +1,23 @@
+<div class="form-check">
+  <input
+    class="form-check-input"
+    type="checkbox"
+    [checked]="task().completed"
+    (change)="onToggle()"
+    [id]="'task-' + task().id"
+  />
+  <label
+    class="form-check-label"
+    [for]="'task-' + task().id"
+    [class.text-decoration-line-through]="task().completed"
+  >
+    {{ task().text }}
+  </label>
+</div>
+<button
+  class="btn btn-danger btn-sm ms-2"
+  (click)="onDelete()"
+  aria-label="Delete task"
+>
+  Delete
+</button>

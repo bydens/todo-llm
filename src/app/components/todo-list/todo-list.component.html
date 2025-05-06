@@ -1,141 +1,31 @@
-<div class="input-group mb-3">
-  <input
-    type="text"
-    [(ngModel)]="newTaskText"
-    class="form-control"
-    placeholder="Add a new task..."
-    (keyup.enter)="addTask()"
-  />
-  <button class="btn btn-primary" type="button" (click)="addTask()">Add</button>
-</div>
+<app-todo-add (addTask)="addTask($event)"></app-todo-add>
 
-<!-- Filter Buttons -->
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h5 class="mb-0">Tasks</h5>
-  <div class="btn-group" role="group" aria-label="Task filters">
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      [class.active]="currentFilter === 'all'"
-      (click)="setFilter('all')"
-    >
-      All
-    </button>
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      [class.active]="currentFilter === 'active'"
-      (click)="setFilter('active')"
-    >
-      Active
-    </button>
-    <button
-      type="button"
-      class="btn btn-outline-secondary"
-      [class.active]="currentFilter === 'completed'"
-      (click)="setFilter('completed')"
-    >
-      Completed
-    </button>
-  </div>
-</div>
+<app-todo-filter
+  [currentFilter]="filter()"
+  (filterChange)="setFilter($event)"
+></app-todo-filter>
 
-<div class="list-group mb-3">
-  <ul class="list-group">
-    <!-- Update condition to check paginatedTasks -->
-    <li *ngIf="paginatedTasks.length === 0" class="list-group-item text-muted">
-      <span *ngIf="currentFilter === 'all'">No tasks yet! Add one above.</span>
-      <span *ngIf="currentFilter === 'active'">No active tasks.</span>
-      <span *ngIf="currentFilter === 'completed'">No completed tasks.</span>
-    </li>
-    <!-- Iterate over paginatedTasks -->
-    <li
-      *ngFor="let task of paginatedTasks"
-      class="list-group-item d-flex justify-content-between align-items-center"
-      [class.list-group-item-secondary]="task.completed"
-    >
-      <div class="form-check">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          [checked]="task.completed"
-          (change)="toggleTaskCompletion(task.id)"
-          [id]="'task-' + task.id"
-        />
-        <label
-          class="form-check-label"
-          [for]="'task-' + task.id"
-          [class.text-decoration-line-through]="task.completed"
-        >
-          {{ task.text }}
-        </label>
-      </div>
-      <button
-        class="btn btn-danger btn-sm ms-2"
-        (click)="requestDeleteTask(task.id)"
-      >
-        Delete
-      </button>
-    </li>
-  </ul>
-</div>
+<app-task-list
+  [tasks]="paginatedTasks()"
+  [currentFilter]="filter()"
+  (toggleCompletion)="toggleTaskCompletion($event)"
+  (requestDelete)="requestDeleteTask($event)"
+></app-task-list>
 
-<!-- Pagination Controls - Update condition to check filteredTasks -->
-<nav aria-label="Task pagination" *ngIf="filteredTasks.length > itemsPerPage">
-  <ul class="pagination justify-content-center">
-    <li class="page-item" [class.disabled]="currentPage === 1">
-      <button class="page-link" (click)="previousPage()" aria-label="Previous">
-        <span aria-hidden="true">&laquo;</span>
-      </button>
-    </li>
-    <li class="page-item disabled">
-      <span class="page-link">Page {{ currentPage }} of {{ totalPages }}</span>
-    </li>
-    <li class="page-item" [class.disabled]="currentPage === totalPages">
-      <button class="page-link" (click)="nextPage()" aria-label="Next">
-        <span aria-hidden="true">&raquo;</span>
-      </button>
-    </li>
-  </ul>
-</nav>
+<app-task-pagination
+  [currentPage]="currentPage()"
+  [totalPages]="totalPages()"
+  [itemsPerPage]="itemsPerPage"
+  [totalFilteredItems]="filteredTasks().length"
+  (previous)="previousPage()"
+  (next)="nextPage()"
+></app-task-pagination>
 
-<div
-  class="modal"
-  tabindex="-1"
-  [style.display]="showDeleteConfirmation ? 'block' : 'none'"
-  [class.show]="showDeleteConfirmation"
->
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Confirm Deletion</h5>
-        <button
-          type="button"
-          class="btn-close"
-          aria-label="Close"
-          (click)="cancelDelete()"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>Are you sure you want to delete this task?</p>
-      </div>
-      <div class="modal-footer">
-        <button
-          type="button"
-          class="btn btn-secondary"
-          (click)="cancelDelete()"
-        >
-          Cancel
-        </button>
-        <button type="button" class="btn btn-danger" (click)="confirmDelete()">
-          Delete
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-<div
-  class="modal-backdrop fade"
-  [class.show]="showDeleteConfirmation"
-  [style.display]="showDeleteConfirmation ? 'block' : 'none'"
-></div>
+<app-confirmation-modal
+  [isOpen]="showDeleteConfirmation()"
+  title="Confirm Deletion"
+  message="Are you sure you want to delete this task?"
+  confirmButtonText="Delete"
+  (confirm)="confirmDelete()"
+  (cancel)="cancelDelete()"
+></app-confirmation-modal>

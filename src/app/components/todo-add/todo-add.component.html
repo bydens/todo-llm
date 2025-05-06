@@ -1,0 +1,18 @@
+<div class="input-group mb-3">
+  <input
+    type="text"
+    [(ngModel)]="newTaskText"
+    class="form-control"
+    placeholder="Add a new task..."
+    (keyup.enter)="onAddTask()"
+    aria-label="New task text"
+  />
+  <button
+    class="btn btn-primary"
+    type="button"
+    (click)="onAddTask()"
+    [disabled]="!newTaskText.trim()"
+  >
+    Add
+  </button>
+</div>

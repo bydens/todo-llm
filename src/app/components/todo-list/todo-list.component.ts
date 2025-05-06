@@ -1,95 +1,92 @@
-import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, inject, signal, computed, WritableSignal, Signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
-interface TodoItem {
-  id: number;
-  text: string;
-  completed: boolean;
-}
-
-type FilterType = 'all' | 'active' | 'completed'; // Define filter types
+import { TodoService } from '../../services/todo.service';
+import { TodoItem, FilterType } from '../../models/todo-item.model';
+import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal.component';
+import { TodoAddComponent } from '../todo-add/todo-add.component';
+import { TodoFilterComponent } from '../todo-filter/todo-filter.component';
+import { TaskListComponent } from '../task-list/task-list.component';
+import { TaskPaginationComponent } from '../task-pagination/task-pagination.component';
 
 @Component({
   selector: 'app-todo-list',
   templateUrl: './todo-list.component.html',
   styleUrls: ['./todo-list.component.scss'],
-  imports: [FormsModule, CommonModule],
+  imports: [
+    CommonModule,
+    ConfirmationModalComponent,
+    TodoAddComponent,
+    TodoFilterComponent,
+    TaskListComponent,
+    TaskPaginationComponent
+  ],
   standalone: true,
+
 })
-export class TodoListComponent implements OnInit {
-  tasks: TodoItem[] = [];
-  filteredTasks: TodoItem[] = []; // Tasks after filtering
-  paginatedTasks: TodoItem[] = []; // Tasks for the current page
-  newTaskText: string = '';
-  private readonly storageKey = 'angular_todo_tasks';
+export class TodoListComponent {
+  private todoService = inject(TodoService);
 
-  showDeleteConfirmation = false;
-  taskToDeleteId: number | null = null;
+  filter: WritableSignal<FilterType> = signal<FilterType>('all');
+  currentPage: WritableSignal<number> = signal<number>(1);
 
-  // Pagination properties
-  currentPage: number = 1;
   itemsPerPage: number = 10;
-  totalPages: number = 1;
 
-  // Filter property
-  currentFilter: FilterType = 'all';
+  showDeleteConfirmation: WritableSignal<boolean> = signal(false);
+  taskToDeleteId: WritableSignal<number | null> = signal(null);
 
-  ngOnInit(): void {
-    this.loadTasks();
+  filteredTasks: Signal<TodoItem[]> = computed(() => {
+    const tasks = this.todoService.tasks();
+    const currentFilter = this.filter();
+    if (currentFilter === 'active') {
+      return tasks.filter(task => !task.completed);
+    } else if (currentFilter === 'completed') {
+      return tasks.filter(task => task.completed);
+    }
+    return [...tasks];
+  });
+
+  totalPages: Signal<number> = computed(() => {
+    return Math.max(1, Math.ceil(this.filteredTasks().length / this.itemsPerPage));
+  });
+
+  paginatedTasks: Signal<TodoItem[]> = computed(() => {
+    const tasks = this.filteredTasks();
+    const page = this.currentPage();
+    const startIndex = (page - 1) * this.itemsPerPage;
+    const endIndex = startIndex + this.itemsPerPage;
+    return tasks.slice(startIndex, endIndex);
+  });
+
+  constructor() {
+
+    effect(() => {
+      const current = this.currentPage();
+      const total = this.totalPages();
+      if (current > total) {
+        this.currentPage.set(total);
+      }
+    });
   }
 
   toggleTaskCompletion(idToToggle: number): void {
-    const task = this.tasks.find(t => t.id === idToToggle);
-    if (task) {
-      task.completed = !task.completed;
-      this.saveTasks();
-      this.applyFiltersAndPagination(); // Re-apply filter and pagination
-    }
+    this.todoService.toggleTaskCompletion(idToToggle);
   }
 
-  loadTasks(): void {
-    const storedTasks = localStorage.getItem(this.storageKey);
-    if (storedTasks) {
-      this.tasks = JSON.parse(storedTasks);
-    }
-    this.applyFiltersAndPagination(); // Apply filter and pagination after loading
-  }
+  addTask(text: string): void {
+    this.todoService.addTask(text);
 
-  saveTasks(): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.tasks));
-    // Filter/Pagination is handled separately after actions
-  }
-
-  addTask(): void {
-    if (this.newTaskText.trim() === '') return;
-
-    const newTask: TodoItem = {
-      id: Date.now(),
-      text: this.newTaskText.trim(),
-      completed: false,
-    };
-    this.tasks.push(newTask);
-    this.newTaskText = '';
-    this.saveTasks();
-    // Apply filter, then go to the last page of the potentially filtered list
-    this.applyFiltersAndPagination();
-    this.goToPage(this.totalPages);
   }
 
   requestDeleteTask(idToDelete: number): void {
-    this.taskToDeleteId = idToDelete;
-    this.showDeleteConfirmation = true;
+    this.taskToDeleteId.set(idToDelete);
+    this.showDeleteConfirmation.set(true);
   }
 
   confirmDelete(): void {
-    if (this.taskToDeleteId !== null) {
-      const taskIndex = this.tasks.findIndex(task => task.id === this.taskToDeleteId);
-      if (taskIndex > -1) {
-        this.tasks.splice(taskIndex, 1);
-        this.saveTasks();
-        this.applyFiltersAndPagination(); // Re-apply filter and pagination
-      }
+    const id = this.taskToDeleteId();
+    if (id !== null) {
+      this.todoService.deleteTask(id);
+
     }
     this.closeModal();
   }
@@ -99,62 +96,32 @@ export class TodoListComponent implements OnInit {
   }
 
   private closeModal(): void {
-    this.showDeleteConfirmation = false;
-    this.taskToDeleteId = null;
+    this.showDeleteConfirmation.set(false);
+    this.taskToDeleteId.set(null);
   }
 
-  // --- Filter Method ---
   setFilter(filter: FilterType): void {
-    this.currentFilter = filter;
-    this.currentPage = 1; // Reset to first page when filter changes
-    this.applyFiltersAndPagination();
+    this.filter.set(filter);
+    this.currentPage.set(1);
   }
-
-  // --- Combined Filter and Pagination Logic ---
-  applyFiltersAndPagination(): void {
-    // 1. Apply Filter
-    if (this.currentFilter === 'active') {
-      this.filteredTasks = this.tasks.filter(task => !task.completed);
-    } else if (this.currentFilter === 'completed') {
-      this.filteredTasks = this.tasks.filter(task => task.completed);
-    } else {
-      this.filteredTasks = [...this.tasks]; // Show all, create a copy
-    }
-
-    // 2. Apply Pagination to filtered list
-    this.totalPages = Math.ceil(this.filteredTasks.length / this.itemsPerPage);
-    if (this.totalPages === 0) {
-      this.totalPages = 1; // Ensure at least one page even if empty
-    }
-    if (this.currentPage > this.totalPages) {
-      this.currentPage = this.totalPages; // Adjust if current page becomes invalid
-    }
-    if (this.currentPage < 1) {
-      this.currentPage = 1; // Ensure current page is at least 1
-    }
-
-
-    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-    const endIndex = startIndex + this.itemsPerPage;
-    this.paginatedTasks = this.filteredTasks.slice(startIndex, endIndex);
-  }
-
-
-  // --- Pagination Methods ---
-  // updatePaginatedTasks is now replaced by applyFiltersAndPagination
 
   goToPage(page: number): void {
-    if (page >= 1 && page <= this.totalPages) {
-      this.currentPage = page;
-      this.applyFiltersAndPagination(); // Use the combined method
+    const total = this.totalPages();
+    const validPage = Math.max(1, Math.min(page, total));
+    if (this.currentPage() !== validPage) {
+      this.currentPage.set(validPage);
     }
   }
 
   previousPage(): void {
-    this.goToPage(this.currentPage - 1);
+    if (this.currentPage() > 1) {
+      this.currentPage.update(p => p - 1);
+    }
   }
 
   nextPage(): void {
-    this.goToPage(this.currentPage + 1);
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update(p => p + 1);
+    }
   }
 }
