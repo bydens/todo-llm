@@ -5,65 +5,21 @@
   (filterChange)="setFilter($event)"
 ></app-todo-filter>
 
-<div class="list-group mb-3" *ngIf="paginatedTasks$ | async as paginatedTasks">
-  <ul class="list-group">
-    <li *ngIf="paginatedTasks.length === 0" class="list-group-item text-muted">
-      <span *ngIf="(filter$ | async) === 'all'"
-        >No tasks yet! Add one above.</span
-      >
-      <span *ngIf="(filter$ | async) === 'active'">No active tasks.</span>
-      <span *ngIf="(filter$ | async) === 'completed'">No completed tasks.</span>
-    </li>
-    <app-todo-item
-      *ngFor="let task of paginatedTasks"
-      [task]="task"
-      (toggleCompletion)="toggleTaskCompletion($event)"
-      (requestDelete)="requestDeleteTask($event)"
-    ></app-todo-item>
-  </ul>
-</div>
+<app-task-list
+  [tasks]="(paginatedTasks$ | async) ?? []"
+  [currentFilter]="filter$ | async"
+  (toggleCompletion)="toggleTaskCompletion($event)"
+  (requestDelete)="requestDeleteTask($event)"
+></app-task-list>
 
-<nav
-  aria-label="Task pagination"
-  *ngIf="(filteredTasks$ | async)?.length ?? 0 > itemsPerPage"
->
-  <ul
-    class="pagination justify-content-center"
-    *ngIf="{
-      currentPage: currentPage$ | async,
-      totalPages: totalPages$ | async
-    } as pagination"
-  >
-    <li class="page-item" [class.disabled]="pagination.currentPage === 1">
-      <button
-        class="page-link"
-        (click)="previousPage()"
-        aria-label="Previous"
-        [disabled]="pagination.currentPage === 1"
-      >
-        <span aria-hidden="true">&laquo;</span>
-      </button>
-    </li>
-    <li class="page-item disabled">
-      <span class="page-link"
-        >Page {{ pagination.currentPage }} of {{ pagination.totalPages }}</span
-      >
-    </li>
-    <li
-      class="page-item"
-      [class.disabled]="pagination.currentPage === pagination.totalPages"
-    >
-      <button
-        class="page-link"
-        (click)="nextPage()"
-        aria-label="Next"
-        [disabled]="pagination.currentPage === pagination.totalPages"
-      >
-        <span aria-hidden="true">&raquo;</span>
-      </button>
-    </li>
-  </ul>
-</nav>
+<app-task-pagination
+  [currentPage]="currentPage$ | async"
+  [totalPages]="totalPages$ | async"
+  [itemsPerPage]="itemsPerPage"
+  [totalFilteredItems]="(filteredTasks$ | async)?.length ?? 0"
+  (previous)="previousPage()"
+  (next)="nextPage()"
+></app-task-pagination>
 
 <app-confirmation-modal
   [isOpen]="showDeleteConfirmation"

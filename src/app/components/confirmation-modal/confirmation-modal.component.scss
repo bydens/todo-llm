@@ -1,14 +1,11 @@
-// filepath: /Users/denysbykanov/Projects/angular/todo-llm/src/app/components/confirmation-modal/confirmation-modal.component.scss
 :host {
-  // Styles for the host if needed, but the template handles modal display
 }
 
-// Ensure backdrop has correct opacity if needed, Bootstrap usually handles this
 .modal-backdrop.show {
   opacity: 0.5; // Default Bootstrap opacity
 }
 
 .modal.show {
-   display: block; // Ensure modal is displayed
+   display: block;
 }
 

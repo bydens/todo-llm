@@ -1,0 +1,30 @@
+<nav aria-label="Task pagination" *ngIf="showPagination">
+  <ul
+    class="pagination justify-content-center"
+    *ngIf="currentPage !== null && totalPages !== null"
+  >
+    <li class="page-item" [class.disabled]="currentPage === 1">
+      <button
+        class="page-link"
+        (click)="onPreviousPage()"
+        aria-label="Previous"
+        [disabled]="currentPage === 1"
+      >
+        <span aria-hidden="true">&laquo;</span>
+      </button>
+    </li>
+    <li class="page-item disabled">
+      <span class="page-link">Page {{ currentPage }} of {{ totalPages }}</span>
+    </li>
+    <li class="page-item" [class.disabled]="currentPage === totalPages">
+      <button
+        class="page-link"
+        (click)="onNextPage()"
+        aria-label="Next"
+        [disabled]="currentPage === totalPages"
+      >
+        <span aria-hidden="true">&raquo;</span>
+      </button>
+    </li>
+  </ul>
+</nav>
