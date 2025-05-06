@@ -5,8 +5,8 @@ import { TodoItem, FilterType } from '../../models/todo-item.model';
 import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal.component';
 import { TodoAddComponent } from '../todo-add/todo-add.component';
 import { TodoFilterComponent } from '../todo-filter/todo-filter.component';
-import { TaskListComponent } from '../task-list/task-list.component'; 
-import { TaskPaginationComponent } from '../task-pagination/task-pagination.component'; 
+import { TaskListComponent } from '../task-list/task-list.component';
+import { TaskPaginationComponent } from '../task-pagination/task-pagination.component';
 
 @Component({
   selector: 'app-todo-list',
@@ -21,7 +21,7 @@ import { TaskPaginationComponent } from '../task-pagination/task-pagination.comp
     TaskPaginationComponent
   ],
   standalone: true,
-  
+
 })
 export class TodoListComponent {
   private todoService = inject(TodoService);
@@ -29,7 +29,7 @@ export class TodoListComponent {
   filter: WritableSignal<FilterType> = signal<FilterType>('all');
   currentPage: WritableSignal<number> = signal<number>(1);
 
-  itemsPerPage: number = 10; 
+  itemsPerPage: number = 10;
 
   showDeleteConfirmation: WritableSignal<boolean> = signal(false);
   taskToDeleteId: WritableSignal<number | null> = signal(null);
@@ -37,13 +37,12 @@ export class TodoListComponent {
   filteredTasks: Signal<TodoItem[]> = computed(() => {
     const tasks = this.todoService.tasks();
     const currentFilter = this.filter();
-    console.log("Filtering tasks...", currentFilter, tasks);
     if (currentFilter === 'active') {
       return tasks.filter(task => !task.completed);
     } else if (currentFilter === 'completed') {
       return tasks.filter(task => task.completed);
     }
-    return [...tasks]; 
+    return [...tasks];
   });
 
   totalPages: Signal<number> = computed(() => {
@@ -55,24 +54,17 @@ export class TodoListComponent {
     const page = this.currentPage();
     const startIndex = (page - 1) * this.itemsPerPage;
     const endIndex = startIndex + this.itemsPerPage;
-    console.log("Paginating tasks...", page, startIndex, endIndex, tasks);
     return tasks.slice(startIndex, endIndex);
   });
 
   constructor() {
-    
+
     effect(() => {
       const current = this.currentPage();
       const total = this.totalPages();
-      console.log(`Effect: currentPage: ${current}, totalPages: ${total}`);
-      if (current > total && total > 0) {
-        console.log(`Effect: Adjusting currentPage to ${total}`);
+      if (current > total) {
         this.currentPage.set(total);
-      } else if (total === 0 && current !== 1) { 
-        console.log(`Effect: Adjusting currentPage to 1 (no tasks/pages)`);
-        this.currentPage.set(1);
       }
-      
     });
   }
 
@@ -82,7 +74,7 @@ export class TodoListComponent {
 
   addTask(text: string): void {
     this.todoService.addTask(text);
-    
+
   }
 
   requestDeleteTask(idToDelete: number): void {
@@ -94,7 +86,7 @@ export class TodoListComponent {
     const id = this.taskToDeleteId();
     if (id !== null) {
       this.todoService.deleteTask(id);
-      
+
     }
     this.closeModal();
   }
@@ -110,7 +102,7 @@ export class TodoListComponent {
 
   setFilter(filter: FilterType): void {
     this.filter.set(filter);
-    this.currentPage.set(1); 
+    this.currentPage.set(1);
   }
 
   goToPage(page: number): void {
