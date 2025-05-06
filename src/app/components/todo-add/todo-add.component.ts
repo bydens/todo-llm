@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, output, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -11,14 +11,14 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TodoAddComponent {
-  @Output() addTask = new EventEmitter<string>();
+  addTask = output<string>();
   newTaskText: string = '';
 
   onAddTask(): void {
     const text = this.newTaskText.trim();
     if (text) {
       this.addTask.emit(text);
-      this.newTaskText = ''; // Clear input after emitting
+      this.newTaskText = ''; 
     }
   }
 }

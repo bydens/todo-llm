@@ -10,7 +10,7 @@ describe('TodoItemComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TodoItemComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(TodoItemComponent);
     component = fixture.componentInstance;

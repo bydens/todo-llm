@@ -1,13 +1,13 @@
-import { Component, Output, EventEmitter, input, InputSignal } from '@angular/core';
+import { Component, output, input, InputSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-confirmation-modal',
   standalone: true,
-  imports: [CommonModule], // Needed for ngIf, ngClass etc.
+  imports: [CommonModule], 
   templateUrl: './confirmation-modal.component.html',
   styleUrls: ['./confirmation-modal.component.scss'],
-  // ChangeDetectionStrategy.OnPush is implicitly handled well with signals
+  
 })
 export class ConfirmationModalComponent {
   isOpen: InputSignal<boolean> = input<boolean>(false);
@@ -16,8 +16,8 @@ export class ConfirmationModalComponent {
   confirmButtonText: InputSignal<string> = input<string>('Confirm');
   cancelButtonText: InputSignal<string> = input<string>('Cancel');
 
-  @Output() confirm = new EventEmitter<void>();
-  @Output() cancel = new EventEmitter<void>(); // Emits on close button or cancel button
+  confirm = output<void>();
+  cancel = output<void>(); 
 
   onConfirm(): void {
     this.confirm.emit();

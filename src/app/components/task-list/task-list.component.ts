@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, input, InputSignal } from '@angular/core';
+import { Component, output, input, InputSignal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TodoItem } from '../../models/todo-item.model';
 import { TodoItemComponent } from '../todo-item/todo-item.component';
@@ -9,14 +9,14 @@ import { TodoItemComponent } from '../todo-item/todo-item.component';
   imports: [CommonModule, TodoItemComponent],
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.scss'],
-  // ChangeDetectionStrategy.OnPush is implicitly handled well with signals
+  
 })
 export class TaskListComponent {
   tasks: InputSignal<TodoItem[]> = input<TodoItem[]>([]);
-  currentFilter: InputSignal<string | null> = input<string | null>('all'); // To display appropriate empty state message
+  currentFilter: InputSignal<string | null> = input<string | null>('all'); 
 
-  @Output() toggleCompletion = new EventEmitter<number>();
-  @Output() requestDelete = new EventEmitter<number>();
+  toggleCompletion = output<number>();
+  requestDelete = output<number>();
 
   onToggleCompletion(id: number): void {
     this.toggleCompletion.emit(id);

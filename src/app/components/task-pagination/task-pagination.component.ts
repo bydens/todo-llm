@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, input, InputSignal, computed, Signal } from '@angular/core';
+import { Component, output, input, InputSignal, computed, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
   templateUrl: './task-pagination.component.html',
   styleUrls: ['./task-pagination.component.scss'],
-  // ChangeDetectionStrategy.OnPush is implicitly handled well with signals
+  
 })
 export class TaskPaginationComponent {
   currentPage: InputSignal<number | null> = input<number | null>(1);
@@ -16,8 +16,8 @@ export class TaskPaginationComponent {
   totalFilteredItems: InputSignal<number> = input<number>(0);
 
 
-  @Output() previous = new EventEmitter<void>();
-  @Output() next = new EventEmitter<void>();
+  previous = output<void>();
+  next = output<void>();
 
   onPreviousPage(): void {
     this.previous.emit();

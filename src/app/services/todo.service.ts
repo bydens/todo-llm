@@ -1,19 +1,19 @@
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { TodoItem } from '../models/todo-item.model'; // Assuming you move the interface
+import { TodoItem } from '../models/todo-item.model'; 
 
 @Injectable({
-  providedIn: 'root' // Provide the service application-wide
+  providedIn: 'root' 
 })
 export class TodoService {
   private readonly storageKey = 'angular_todo_tasks';
   private tasksSignal: WritableSignal<TodoItem[]> = signal<TodoItem[]>([]);
 
-  // Expose tasks as a readonly signal
+  
   public readonly tasks = this.tasksSignal.asReadonly();
 
   constructor() {
-    this.loadTasks(); // Load tasks when the service is instantiated
+    this.loadTasks(); 
   }
 
   private loadTasks(): void {
@@ -24,7 +24,7 @@ export class TodoService {
 
   private saveTasks(tasks: TodoItem[]): void {
     localStorage.setItem(this.storageKey, JSON.stringify(tasks));
-    this.tasksSignal.set(tasks); // Update the signal
+    this.tasksSignal.set(tasks); 
   }
 
   addTask(text: string): void {
@@ -35,7 +35,7 @@ export class TodoService {
       completed: false,
     };
     this.tasksSignal.update(currentTasks => [...currentTasks, newTask]);
-    localStorage.setItem(this.storageKey, JSON.stringify(this.tasksSignal())); // Save after update
+    localStorage.setItem(this.storageKey, JSON.stringify(this.tasksSignal())); 
   }
 
   toggleTaskCompletion(idToToggle: number): void {
@@ -44,17 +44,17 @@ export class TodoService {
         task.id === idToToggle ? { ...task, completed: !task.completed } : task
       )
     );
-    localStorage.setItem(this.storageKey, JSON.stringify(this.tasksSignal())); // Save after update
+    localStorage.setItem(this.storageKey, JSON.stringify(this.tasksSignal())); 
   }
 
   deleteTask(idToDelete: number): void {
     this.tasksSignal.update(currentTasks =>
       currentTasks.filter(task => task.id !== idToDelete)
     );
-    localStorage.setItem(this.storageKey, JSON.stringify(this.tasksSignal())); // Save after update
+    localStorage.setItem(this.storageKey, JSON.stringify(this.tasksSignal())); 
   }
 
-  // Optional: Method to get current tasks synchronously if needed elsewhere
+  
   getCurrentTasks(): TodoItem[] {
     return this.tasksSignal();
   }
