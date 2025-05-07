@@ -32,7 +32,7 @@ export class TodoListComponent {
   itemsPerPage: number = 10;
 
   showDeleteConfirmation: WritableSignal<boolean> = signal(false);
-  taskToDeleteId: WritableSignal<number | null> = signal(null);
+  taskToDeleteId: WritableSignal<string | null> = signal(null); // Изменен тип на string | null
 
   filteredTasks: Signal<TodoItem[]> = computed(() => {
     const tasks = this.todoService.tasks();
@@ -68,17 +68,17 @@ export class TodoListComponent {
     });
   }
 
-  toggleTaskCompletion(idToToggle: number): void {
+  toggleTaskCompletion(idToToggle: string): void { // Изменен тип параметра на string
     this.todoService.toggleTaskCompletion(idToToggle);
   }
 
   addTask(text: string): void {
     this.todoService.addTask(text);
-
   }
 
-  requestDeleteTask(idToDelete: number): void {
-    this.taskToDeleteId.set(idToDelete);
+  requestDeleteTask(idToDelete: string): void { // Изменен тип параметра на string
+    // Убедимся, что idToDelete действительно строка перед установкой
+    this.taskToDeleteId.set(idToDelete ? String(idToDelete) : null);
     this.showDeleteConfirmation.set(true);
   }
 

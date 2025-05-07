@@ -9,20 +9,20 @@ import { TodoItemComponent } from '../todo-item/todo-item.component';
   imports: [CommonModule, TodoItemComponent],
   templateUrl: './task-list.component.html',
   styleUrls: ['./task-list.component.scss'],
-  
+
 })
 export class TaskListComponent {
   tasks: InputSignal<TodoItem[]> = input<TodoItem[]>([]);
-  currentFilter: InputSignal<string | null> = input<string | null>('all'); 
+  currentFilter: InputSignal<string | null> = input<string | null>('all');
 
-  toggleCompletion = output<number>();
-  requestDelete = output<number>();
+  toggleCompletion = output<string>();
+  requestDelete = output<string>();
 
-  onToggleCompletion(id: number): void {
+  onToggleCompletion(id: string): void {
     this.toggleCompletion.emit(id);
   }
 
-  onRequestDelete(id: number): void {
+  onRequestDelete(id: string): void {
     this.requestDelete.emit(id);
   }
 }
